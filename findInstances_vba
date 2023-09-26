@@ -1,0 +1,48 @@
+Sub FindStringsInSlidesFromCSV()
+    Dim pptApp As Object
+    Dim pptPresentation As Object
+    Dim pptSlide As Object
+    Dim searchString As String
+    Dim slideNumber As Integer
+    Dim csvFilePath As String
+    Dim fileNum As Integer
+    Dim fileContent As String
+    
+    ' Initialize PowerPoint application
+    Set pptApp = CreateObject("PowerPoint.Application")
+    
+    ' Open the presentation file (change the file path as needed)
+    Set pptPresentation = pptApp.Presentations.Open("C:\Path\To\Your\Presentation.pptx")
+    
+    ' Set the path to the CSV file with search strings
+    csvFilePath = ThisWorkbook.Path & "\search_strings.csv"
+    
+    ' Check if the CSV file exists
+    If Dir(csvFilePath) <> "" Then
+        ' Open the CSV file
+        fileNum = FreeFile
+        Open csvFilePath For Input As fileNum
+        Do While Not EOF(fileNum)
+            ' Read each line (string) from the CSV file
+            Line Input #fileNum, searchString
+            ' Loop through each slide in the presentation
+            For Each pptSlide In pptPresentation.Slides
+                ' Search for the string in the slide's text
+                If InStr(1, pptSlide.TextFrame.TextRange.Text, searchString, vbTextCompare) > 0 Then
+                    ' If the string is found, get the slide number and display it in the Immediate Window
+                    slideNumber = pptSlide.SlideNumber
+                    Debug.Print "String '" & searchString & "' found on Slide " & slideNumber
+                End If
+            Next pptSlide
+        Loop
+        Close fileNum
+    Else
+        Debug.Print "CSV file not found."
+    End If
+    
+    ' Close the presentation and release the PowerPoint objects
+    pptPresentation.Close
+    Set pptPresentation = Nothing
+    pptApp.Quit
+    Set pptApp = Nothing
+End Sub
